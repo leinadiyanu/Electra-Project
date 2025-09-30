@@ -41,6 +41,45 @@ Connection pooling to prevent DB overload
 Load balancing for multiple backend instances
 Rate limiting for API abuse prevention
 
+## 📈 Scalability & Traffic Handling  
+
+University elections often mean **thousands of voters logging in at once**. To handle this safely and efficiently:  
+
+### 🔹 Database Optimization  
+- Add indexes on `matric_number`, `election_id`, and `candidate_id`.  
+- Use connection pooling (`pg-pool` or external tools like PgBouncer).  
+
+### 🔹 Caching Layer (Redis)  
+- Store session tokens, election details, and “already voted” status.  
+- Reduces repeated database hits.  
+
+### 🔹 Vote Processing Queue (Optional)  
+- API receives a vote → places it in a queue → worker service writes it to DB.  
+- Prevents DB overload during peak hours.  
+
+### 🔹 Load Balancing  
+- Deploy multiple backend servers.  
+- Use Nginx, HAProxy, or cloud load balancer to distribute requests evenly.  
+
+### 🔹 Rate Limiting & Security  
+- Apply middleware (`express-rate-limit`) to block abuse/bot requests.  
+- Use HTTPS + secure headers for all API traffic.  
+
+### 🔹 Autoscaling (Cloud Deployment)  
+- Host on a scalable platform (Render, Railway, AWS, GCP).  
+- Configure autoscaling to spin up more backend instances during heavy voting traffic.  
+
+---
+
+### ⚙️ Integration Overview  
+
+- **Node.js + PostgreSQL** → Core backend & relational DB.  
+- **Redis** → Quick lookups for session, election data, and vote checks.  
+- **Queue System** → Ensures smooth handling of high-volume votes.  
+- **Load Balancer** → Distributes traffic across multiple backend servers.  
+- **Autoscaling** → Automatically adjusts resources during peak load.  
+
+
 ## 🔐 Core Features
 
 - Student login with matric number and surname
@@ -51,13 +90,37 @@ Rate limiting for API abuse prevention
 
 ## 📂 Project Structure (MVC-style)
 ```
-/src
-┣ /controllers
-┣ /models
-┣ /routes
-┣ /middleware
-┣ /utils
-┗ server.js
+e-voting-system/
+│── src/
+│   ├── auth/             # Login, JWT handling
+│   │   ├── auth.controller.js
+│   │   ├── auth.routes.js
+│   │   └── auth.service.js
+│   │
+│   ├── elections/        # Election creation & management
+│   │   ├── election.controller.js
+│   │   ├── election.routes.js
+│   │   └── election.service.js
+│   │
+│   ├── votes/            # Voting process
+│   │   ├── vote.controller.js
+│   │   ├── vote.routes.js
+│   │   └── vote.service.js
+│   │
+│   ├── results/          # Result release logic
+│   │   ├── result.controller.js
+│   │   ├── result.routes.js
+│   │   └── result.service.js
+│   │
+│   ├── middleware/       # Auth checks, validation
+│   ├── config/           # DB & env configs
+│   └── utils/            # Helper functions
+│
+│── migrations/           # SQL migrations
+│── server.js             # Entry point
+│── package.json
+│── README.md
+
 ```
 
 ## 🚀 Getting Started
